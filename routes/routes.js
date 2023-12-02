@@ -1,38 +1,35 @@
 var express = require('express');
 var router = express.Router();
-/** 
-const invFun = require('../controllers/inventario');
-const venFun = require('../controllers/ventas');
-const useFun = require("../controllers/usuarios");
-const admFun = require('../controllers/administrar');
+
+/** */
 const midFun = require("../middleware/middleware")
+const crudFun = require("../controllers/crud");
+const logFun = require('../controllers/login');
+const useFun = require("../controllers/usuarios");
+const admFun = require('../controllers/datSistem');
 
-router.post("/createdAdminInit",useFun.createdAdminInit);
-router.post("/createdUse",midFun.verifyUser,useFun.createdUse);
-router.post("/updateUser",midFun.verifyUser,useFun.updateUser);
-router.post('/updatePasword',midFun.verifyUser,useFun.updatePasword);
-router.post('/loginUser',[],useFun.loginUser);
-router.post('/readUsers',midFun.verifyUser,useFun.readUsers);
-router.post('/deleteUser',midFun.verifyUser,useFun.deleteUser);
+const {routMain,onServer} = require('../routes/routMain.js');
 
-router.post("/createdItem", midFun.verifyAdmin, invFun.createdItem);
-router.post("/updateItem",midFun.verifyAdminAlma, invFun.updateItem);
-router.post("/deleteItem",midFun.verifyAdminAlma, invFun.deleteItem);
-router.post("/itemCantMenos",midFun.verifyAdminAlma, invFun.itemCantMenos);
-router.post("/itemCantMas",midFun.verifyAdminAlma, invFun.itemCantMas);
-router.post("/readInventario",midFun.verifyUser, invFun.readInventario);
-router.get("/listaIdsInventario",midFun.verifyUser, invFun.listaIdsInventario);
+router.get('/',[],routMain)
 
-router.post("/createdVenta",midFun.verifyUser,venFun.createdVenta);
-router.post("/updateVenta",midFun.verifyUser, venFun.updateVenta);
-router.post("/deleteVenta",midFun.verifyUser,venFun.deleteVenta);
-router.post("/readVentas",midFun.verifyUser,venFun.readVentas);
-router.post("/readIDSventas",midFun.verifyUser,venFun.readIDSventas);
-router.post("/readVentasUserTime",midFun.verifyUser, venFun.readVentasUserTime);
+router.post("/created",[],crudFun.created);
+router.post("/readAll",[],crudFun.readAll);
+router.post('/readTime',[],crudFun.readTime);
+router.post('/readTimeTime',midFun.verifyLog,crudFun.readTimeTime);
+router.post("/readId",[],crudFun.readId);
+router.post('/update',[],crudFun.update);
+router.post('/delet',[],crudFun.delet);
+router.post("/readIds",[],crudFun.readIds);
+router.post("/count",[],crudFun.count);
 
+router.post('/login',[],logFun.login);
+router.post('/updatePassword',[],logFun.updatePassword);
 
-router.get("/sizeDB",midFun.verifyUser, admFun.sizeDB);
-router.post("/readNumNota",midFun.verifyAdmin, admFun.readNumNota);
-router.post("/writeNumNota",midFun.verifyAdmin, admFun.writeNumNota);*/
+router.post("/createdAdminInit",[],useFun.createdAdminInit);
+router.post("/createdUse",[],useFun.createdUse);
+
+router.post("/sizeDB",[], admFun.sizeDB);
+router.post("/sizeDisk",[], admFun.sizeDisk);
+router.post("/clearDisk",[], admFun.clearDisk);
 
 module.exports = router;

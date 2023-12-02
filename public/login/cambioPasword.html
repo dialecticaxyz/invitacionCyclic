@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-<title>CONFIGURACION</title>
-<link rel="stylesheet" href="/css/estilos.css">
+<title>Cambio Password</title>
+<link rel="stylesheet" href="/css/style.css">
 <style>
 .btn-material{width: 100px;padding: 7px;}
 </style>  
@@ -19,7 +19,7 @@
 <div class="formularioV1">
   <div class="contInput">
     <input  id="user" class="input_ef" type="email" placeholder="" autocomplete="off"/>
-    <label class="label_ef">Usuario :</label>
+    <label class="label_ef">Usuario  (celuar) :</label>
   </div>
   <div class="contInput">
     <input id="pasAnt" class="input_ef" type="password" placeholder="" autocomplete="off"/>
@@ -35,9 +35,8 @@
   </div> 
 </div>
 
-
-<script src="../js/apiBakend.js"></script>
-<script src="../js/mainDB.js"></script>
+<script src="/js/apiBakend.js"></script>
+<script src="/js/mainDB.js"></script>
 <script>
 function init_m(){ }
 
@@ -61,12 +60,13 @@ async function nuevoPasword(){
     let user = document.getElementById("user").value
     let pasAnt = document.getElementById("pasAnt").value
     loadData() 
-    let up = await updatePasword({user,pasAnt,newPas})
-    if("updatePasw"==up){ successDat(true) }
-     
+    let up = await apiPostJsonRut("updatePassword",{user,pasAnt,newPas})
+    if(up.msg=="emptyUser"){ alert("usuario incorrecto") }
+    if(up.msg=="fail"){ alert("contreseña incorrecta") }
+    if(up.msg=="success"){ alert("contreseña Cambiada") }
+    successDat()
   }
 }
-
 </script>
 </body>
 </html>

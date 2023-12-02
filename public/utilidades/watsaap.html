@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<title>WhatsApp</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="../css/style.css">
+<style>
+.qrcode{
+  text-align: center;
+  margin: 20px;
+}
+.qrcode img{
+  margin: auto;
+  box-shadow: 0 0 10px rgba(67, 67, 68, 0.25);
+  padding: 4px;
+}
+.formularioV1{width: 200px;}
+.texto{text-align: center;}
+textarea {
+  width:90%;
+  background-color:#EDF8F5;
+  border: solid 1px #1ebea5;
+  box-shadow:unset;
+  border-radius:5px;
+  padding:10px;
+  min-height:110px;
+}
+</style>
+</head>
+<body onload="startDB();">
+
+<div class="qrcode">
+  <img src="../img/cross.svg"  id="qrcode" style="width: 250px;">  
+</div> 
+<div class="botones">
+  <button class="btn-material" id="resetBoot" onclick="activarBoot()">Reiniciar Boot</button>
+</div>
+<div class="texto">
+  <textarea id="inputMsg" onkeyup="saveTxtInv()"></textarea>
+</div>
+
+<div class="formularioV1">
+  <div class="contInput">
+    <input id="phone" required class="input_ef" type="number" placeholder=""/>
+    <label class="label_ef">Celular (Bolivia)</label>
+  </div>
+</div>
+<div class="botones">
+  <button class="btn-material" id="senManual" onclick="senManual()">Enviar Manual</button>
+  <button class="btn-material" id="senBoot" onclick="senBoot()">Enviar Boot</button>
+</div>
+<div class="botones">
+  <a class="btn-material" href="../invitados/invitadosSendMsg.html">Enviar Mensaje</a>
+</div>
+<br><br><br><br>
+<div class="texto">
+  <textarea id="inputMsgMesa" onkeyup="saveTxtInv()"></textarea>
+</div>
+<div class="botones">
+  <a class="btn-material" href="../invitados/invitadosSendMsgMesa.html">Enviar Numero de mesa</a>
+</div>
+
+<script src="../js/mainDB.js"></script>	
+<script src="../js/apiBakend.js"></script>	
+
+<script>
+let qrcode = document.getElementById("qrcode")
+function conecBootWs(){
+  let socketBoot = new WebSocket(urlBootWs);
+  socketBoot.addEventListener('message', bootMessage);
+  document.getElementById("resetBoot").classList.add("hiden")
+}
+async function activarBoot(){
+  let r = await apiPost(urlBoot+"/activeBoot",{})
+  if(r.msg=="success"){ 
+    console.log("activeBoot") 
+    qrcode.setAttribute("src","../img/loader.gif")
+    conecBootWs()
+  }
+}
+function bootMessage(e){ 
+  //console.log(e.data); 
+  let dat = JSON.parse(e.data)
+  if(dat.rut=="sendQr"){ 
+    qrcode.setAttribute("src",dat.dat) 
+    document.getElementById("resetBoot").classList.add("hiden")
+  }
+  if(dat.rut=="openSession"){ qrcode.setAttribute("src","../img/check.svg") }
+  if(dat.rut=="closeSession"){ 
+    qrcode.setAttribute("src","../img/cross.svg") 
+    document.getElementById("resetBoot").classList.remove("hiden")
+  }
+}
+async function getQr(){
+  let qr = await apiPost(urlBoot+"/scan-qr",{})
+  if(qr.qr=="noQr"){qrcode.setAttribute("src","../img/cross.svg");return }
+  if(qr.qr=="connected"){
+    qrcode.setAttribute("src","../img/check.svg")
+    conecBootWs()
+    return 
+  }
+  if(qr.qr){ 
+    conecBootWs()
+    qrcode.setAttribute("src",qr.qr) 
+  }
+} 
+
+async function senBoot(){
+  loadData()
+  var input = document.getElementById("inputMsg").value
+  var phone = document.getElementById("phone").value
+  let dat = {"message":input,"number":phone}
+  let rs = await apiPost(urlBoot+'/send-message',dat)
+  if(rs.status==true){successDat()}
+}
+
+function senManual(){
+  var input = document.getElementById("inputMsg").value
+  var res = encodeURIComponent(input);
+  var phone = document.getElementById("phone").value
+  var whatsappApiUrl = 'https://api.whatsapp.com/send?text=';
+  let msg = whatsappApiUrl + res + '&phone=' + phone;
+  var a = document.createElement("a");
+  a.href = msg
+  a.click()
+}
+
+async function saveTxtInv(e){
+  let tx = document.getElementById("inputMsg").value
+  let mesa = document.getElementById("inputMsgMesa").value
+  localStorage.setItem("inputMsg",tx)
+  localStorage.setItem("inputMsgMesa",mesa)
+  await sendMessage(JSON.stringify({"rut":"writeMsgInv","dat":tx,"mesa":mesa}))
+}
+
+function init_m(){
+  openSocket("readMsgInv");
+  getQr()
+}  
+</script>
+</body>
+</html>

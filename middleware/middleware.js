@@ -1,55 +1,65 @@
-const jwt = require('jsonwebtoken');
-const config = require('../config.js');
+const {jwtVerify} = require("../cryptJwt/cryptJwt");
 
-async function verifyUser(req, res, next) {
+function verifyLog(req,res,next) {
   const token = req.headers["x-access-token"];
-  if(!token) {
-    return res.status(401).send({message:"No Token aws Provided"});
-  }
-  jwt.verify(token, config.SECRET, (err, decoded) => {
-    if(err){
-      return res.status(401).send({message:"No Token aws Autorised"});
-    }else{
-      return  next();
-    }
-  });
+  if(!token) { return res.send({msg:"fail"}) }
+  jwtVerify(token).then((rs)=>{
+    if(rs.id==undefined){ return res.send({msg:"fail"}) }else{ return next() }
+  })
+}
+function verifyUser(req, res, next) {
+  const token = req.headers["x-access-token"];
+  if(!token) { return res.status(401).send({msg:"No Token"}); }
+  jwtVerify(token).then((rs)=>{
+    if(rs.id==undefined){
+      return res.send({msg:"No Token"});
+    }else{ return next(); }
+  })
 }
 async function verifyAdmin(req, res, next) {
   const token = req.headers["x-access-token"];
-  if(!token) {
-    return res.status(401).send({message:"No Token aws Provided"});
-  }
-  jwt.verify(token, config.SECRET, (err, decoded) => {
-    if(err){
-      return res.status(401).send({message:"No Token aws Autorised"});
+  if(!token) { return res.send({msg:"No Token"}); }
+  jwtVerify(token).then((rs)=>{
+    if(rs.id==undefined){
+      return res.send({msg:"No Autorised"});
     }else{
-      if(decoded.rol=="admin"){
-        return  next();
-      }else{
-        return res.status(401).send({message:"No Autorised"});
+      if(rs.rol=="Administrar"){ return  next(); }else{
+        return res.send({msg:"No Autorised"});
       }
     }
-  });
+  })
+}
+async function verifyVendor(req, res, next) {
+  const token = req.headers["x-access-token"];
+  if(!token) { return res.send({msg:"No Token"}); }
+  jwtVerify(token).then((rs)=>{
+    if(rs.id==undefined){
+      return res.send({msg:"No Autorised"});
+    }else{
+      if(rs.rol=="Vender"){ return  next(); }else{
+        return res.send({msg:"No Autorised"});
+      }
+    }
+  })
 }
 async function verifyAdminAlma(req, res, next) {
   const token = req.headers["x-access-token"];
-  if(!token) {
-    return res.status(401).send({message:"No Token aws Provided"});
-  }
-  jwt.verify(token, config.SECRET, (err, decoded) => {
-    if(err){
-      return res.status(401).send({message:"No Token aws Autorised"});
+  if(!token){ return res.send({msg:"No Token"}); }
+  jwtVerify(token).then((rs)=>{
+    if(rs.id==undefined){
+      return res.send({msg:"No Autorised"});
     }else{
-      if(decoded.rol=="admin"||decoded.rol=="alma"){
-        return  next();
-      }else{
-        return res.status(401).send({message:"No Autorised"});
+      if(rs.rol=="Administrar"||rs.rol=="Almacen"){ return  next(); }else{
+        return res.send({msg:"No Autorised"});
       }
     }
-  });
+  })
 }
+
 module.exports = { 
-  verifyUser:verifyUser,
-  verifyAdmin:verifyAdmin,
-  verifyAdminAlma:verifyAdminAlma
+  verifyLog,
+  verifyVendor,
+  verifyUser,
+  verifyAdmin,
+  verifyAdminAlma
 }

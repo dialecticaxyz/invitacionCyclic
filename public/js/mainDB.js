@@ -1,18 +1,14 @@
 var indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB;
 var dataBase
 function startDB(){
-  dataBase = indexedDB.open("inventario", 11);
+  dataBase = indexedDB.open("evento", 10);
   dataBase.onupgradeneeded = function (e){
     var active = dataBase.result; 
-    var object = active.createObjectStore('inventario', { keyPath : 'id'});
-    if (!active.objectStoreNames.contains('ventas')) {
-      var object = active.createObjectStore('ventas', { keyPath : 'id'});
+    if (!active.objectStoreNames.contains('invitados')) {
+      var object = active.createObjectStore('invitados', { keyPath : 'id'});
     }
-    if (!active.objectStoreNames.contains('archivo')) {
-      var object = active.createObjectStore('archivo', { keyPath : 'id'});
-    }
-    if (!active.objectStoreNames.contains('usuario')) {
-      var object = active.createObjectStore('usuario', { keyPath : 'id'});
+    if (!active.objectStoreNames.contains('usuarios')) {
+      var object = active.createObjectStore('usuarios', { keyPath : 'id'});
     }
   };
   dataBase.onsuccess = function (e){ init_m() };
@@ -107,59 +103,6 @@ function clear_coleccion(col){
   })
 }
 /******* promeas generales BD ******/
-function up_inventario_venta(id,cant){ //predeterminado reductivo
-  return new Promise(function(resolve,reject){
-    var active = dataBase.result;
-    var data = active.transaction(["inventario"], "readwrite");
-    var object = data.objectStore("inventario");
-    var elemento = object.get(id);
-    elemento.onsuccess = function(e){
-      var result = e.target.result;
-      var ct = result["cant"]-cant
-      result["cant"]=ct
-      object.put(result);
-    };
-    elemento.onerror = function (e) {console.log(e)};
-    data.oncomplete = function (e){ resolve(true) };
-  });
-}
-
-/******* promeas generales IndexDb firestore ******/
-function dataWriteLC(f,col){
-  return new Promise(function(resolve,reject){
-    f["time"] = new Date().getTime()
-    db.collection(col).doc(f.id).set(f).then(function(){
-      write_DB(f,col).then(()=>{ resolve(true) })
-    }).catch(function(error){console.error(error);})
-  })
-}
-function dataUpdateLC(id,col,f){
-  return new Promise(function(resolve,reject){
-    f["time"] = new Date().getTime()
-    db.collection(col).doc(id).update(f).then(function(){
-      update_DB(id,f,col).then(()=>{ resolve(true) })
-    }).catch(function(error){console.error(error);})
-  })
-}
-function dataDeleteLC(id,col){
-  return new Promise(function(resolve,reject){
-    db.collection(col).doc(id).delete().then(function(){
-      del_DB(id,col).then(()=>{ resolve(true) })
-    }).catch(function(error){console.error(error);})
-  })
-}
-async function clearDowCloudWriteLocal(col){
-  loadData() 
-  let clsAlm = await clear_coleccion(col)
-  let dat= await db.collection(col).get()
-  for (let i = 0; i < dat.docs.length; i++) {
-    let el= dat.docs[i].data();
-    let reg = await write_DB(el,col)
-    document.getElementById("conter").textContent = dat.docs.length-i
-  }
-  successDat(true)
-}
-/******* promeas generales IndexDb firestore ******/
 //////////////////////// MANEJO DE FORMULARIO //////////////////////////
 function storage(key){ return (localStorage.getItem(key)==null?"":localStorage.getItem(key))}
 function storageNum(key){ return (storage(key)==""?0:parseFloat(localStorage.getItem(key)))}
@@ -202,39 +145,7 @@ function itemFilter(val,act,fil,mat,elm){
     }
   }) 
 }
-let asend = true
-function sortTable(ord,typ,elm,arr){
-  return new Promise(function(resolve,reject){
-    if(ord){
-      if(typ=='txt'){
-        if(asend){
-          arr.sort((a, b) => {
-            if(a[elm] < b[elm]) return 1;
-            if(a[elm] > b[elm]) return -1;
-            return 0;
-          })
-          asend = false
-        }else{
-          arr.sort((a, b) => {
-            if(a[elm] < b[elm]) return -1;
-            if(a[elm] > b[elm]) return 1;
-            return 0;
-          })
-          asend = true
-        }  
-      }else{
-        if(asend){
-          arr.sort(((a, b) => b[elm] - a[elm]));
-          asend = false
-        }else{
-          arr.sort(((a, b) => a[elm] - b[elm]));
-          asend = true
-        }
-      }
-      resolve(arr)
-    }else{ resolve(arr) }
-  })
-}
+
 function ValNum(id){
   let nod = document.getElementById(id)
   if(nod.tagName=="INPUT"){
@@ -266,6 +177,7 @@ function saveText(e,i){
     localStorage.setItem(js,JSON.stringify(jsv))
   }
   if(i==true){renderVentas()}
+  if(i=="init"){init_m()}
 }
 function checkbox(e,i){
   let js = Object.keys(e.target.dataset)[0] 
@@ -275,7 +187,7 @@ function checkbox(e,i){
   if(i==true){renderVentas()}
 }
 function dc2(n){ return parseFloat((n).toFixed(2)) }
-
+function dc1(n){ return parseFloat((n).toFixed(1)) }
 //////////////////////// MANEJO DE FORMULARIO //////////////////////////
 function json_to_from(idf,stg){
   return new Promise(function(resolve,reject){
@@ -313,12 +225,17 @@ function json_to_from(idf,stg){
       let set =  f[i].dataset[Object.keys(f[i].dataset)[0]]  
       if(f[i].tagName=="DIV" || f[i].tagName=="SPAN"){
         document.getElementById(f[i].id).textContent = js[f[i].id];
-        if(set=="fechaForma2"){ if(js[f[i].id]){ document.getElementById(f[i].id).textContent = fechaForma2(js[(f[i]).id]) } }
+        if(set=="fechaForma2"){ if(js[f[i].id]){ document.getElementById(f[i].id).textContent = fechaForma2( js[(f[i]).id]) } }
         if(set=="checkbox"){
           if(js[f[i].id]){
             document.getElementById(f[i].id).textContent=f[i].dataset.check.split("_")[0] 
           }else{
             document.getElementById(f[i].id).textContent=f[i].dataset.check.split("_")[1]
+          }
+        }
+        if(set=="fechTxtFull"){
+          if(js[f[i].id]){
+            document.getElementById(f[i].id).textContent = fechTxtFull( js[(f[i]).id] )  
           }
         }
       }
@@ -327,24 +244,30 @@ function json_to_from(idf,stg){
     resolve(true)
   })
 }
-function form_to_json(id){
+function form_to_json(set){
   return new Promise(function(resolve,reject){
-    const f = document.querySelectorAll('[data-'+id+']')
-    let form = {}
+    const f = document.querySelectorAll('[data-'+set+']')
+    let j = {}
     for (let i = 0; i < f.length; i++) {
       let id = f[i].id
-      let val = f[i].value
-      let tipo = f[i].type
+      let v = f[i].value
+      let t = f[i].type
       let tag = f[i].tagName
-      if(tipo=="number"){if(val==""){form[id]=0}else{form[id]=parseFloat(val)}}
-      if(tipo=="text"){form[id] = val}
-      if(tipo=="password"){form[id] = val}
-      if(tipo=="date"){form[id] = val}
-      if(tipo=="checkbox"){form[id] = f[i].checked}
-      if(tipo=="select-one"){form[id] = val}
-      if(tipo=="email"){form[id] = val}
-      if(tag=="IMG"){form[id] = f[i].src}
-      if(tag=="LABEL"){form[id] = f[i].textContent}
+      if(t=="number"){
+        if(v==""){
+          if(f[i].dataset[set]=="text"){j[id]=""}else{j[id]=0}
+        }else{
+          if(f[i].dataset[set]=="text"){j[id]=v}else{j[id]=parseFloat(v)}
+        }
+      }
+      if(t=="text"){j[id] = v}
+      if(t=="password"){j[id] = v}
+      if(t=="date"){j[id] = v}
+      if(t=="checkbox"){j[id] = f[i].checked}
+      if(t=="select-one"){j[id] = v}
+      if(t=="email"){j[id] = v}
+      if(tag=="IMG"){j[id] = f[i].src}
+      if(tag=="LABEL"){j[id] = f[i].textContent}
       let fc = f[i].dataset.user
       let fe = f[i].dataset["fechcomp"]
       if(fc=="fechComp"){
@@ -353,11 +276,11 @@ function form_to_json(id){
         let mes = f[1].value
         let ano = f[2].value;if(ano==""){continue}
         let fecha = ano+"-"+mes+"-"+dia
-        form[fe] = fecha
+        j[fe] = fecha
       }
       //required
       if(f[i].required){
-        if(form[id]==""||form[fe]==""){
+        if(j[id]==""||j[fe]==""){
           document.getElementById(id).style.backgroundColor="rgb(255, 200, 200)"
           alert("existen datos faltantes")
           resolve(false)
@@ -367,80 +290,76 @@ function form_to_json(id){
       }
       //required
     }
-    resolve(form)
+    resolve(j)
   })
 }
 //////////////////////// MANEJO DE FORMULARIO //////////////////////////
 function lnk(e){ var a = document.createElement("a"); a.href = e+".html"; a.click() }
+function verPdf(i){
+  localStorage.setItem('idVenta',i);
+  var a = document.createElement("a"); 
+  a.href = location.href.split("/")[0]+"//"+(location.href.split("/")[2]).split(":")[0]+":"+window.location.port+"/pdfVenta/pdfVenta.html" 
+  a.click()
+}
+function filtroDiaVen(){
+  var a = document.createElement("a"); 
+  a.href = location.href.split("/")[0]+"//"+(location.href.split("/")[2]).split(":")[0]+":"+window.location.port+"/filtroSet/filtroDiaVen.html" 
+  a.click()
+}
+function filtroMes(){
+  var a = document.createElement("a"); 
+  a.href = location.href.split("/")[0]+"//"+(location.href.split("/")[2]).split(":")[0]+":"+window.location.port+"/filtroSet/filtroMes.html" 
+  a.click()
+}
 ///////////////////// FECHAS /////////////////////// 
 const nombreMeses =  'Enero Febrero Marzo Abril Mayo Junio Julio Agosto Septiembre Octubre Noviembre Diciembre'.split(' ')
-const nombreMesesCorto =  'Ene. Fe. Mar. Abr. May. Jun. Jul. Ago. Sep. Oct. Nov. Dic.'.split(' ')
+const nombreMesesCorto =  'Ene. Feb. Mar. Abr. May. Jun. Jul. Ago. Sep. Oct. Nov. Dic.'.split(' ')
 const NombreDias= 'Domingo Lunes Martes Miércoles Jueves Viernes Sábado '.split(' ')
-let fecActSist = new Date()
-function timeToMesDia(tim){//time 1655244456367
-  let d = new Date(tim)
-  let dia = d.getDate()<10?("0"+d.getDate()):d.getDate()
-  let mes = d.getMonth()
-  return (dia+" "+nombreMeses[mes])
+const nomDiaCor= 'Dom. Lun. Mar. Mié. Jue. Vie. Sáb. '.split(' ')
+function dateTOtxt(tim){
+  let d 
+  if(tim==undefined){d = new Date()}else{d = new Date(tim)}
+  let s = d.getSeconds()<10?("0"+d.getSeconds()):d.getSeconds()
+  let m = d.getMinutes()<10?("0"+d.getMinutes()):d.getMinutes()
+  let h = d.getHours()<10?("0"+d.getHours()):d.getHours()
+  let diN = d.getDate()<10?("0"+d.getDate()):d.getDate()
+  let diTc = nomDiaCor[d.getDay()]
+  let diT = NombreDias[d.getDay()]
+  let meN = (d.getMonth()+1)<10?("0"+(d.getMonth()+1)):(d.getMonth()+1)
+  let meTc = nombreMesesCorto[d.getMonth()]
+  let meT = nombreMeses[d.getMonth()]
+  let ye = d.getFullYear()
+  return {s,m,h,diN,diTc,diT,meN,meTc,meT,ye}
 }
-function fechaForma2(f){// 10/Ene/2020
-  let fc = f.split("-")
-  return (fc[2]+"/"+nombreMesesCorto[fc[1]-1] +"/"+fc[0])
+function timeToMesDia(t){// 1655244456367 > 20 Mayo
+  let d = dateTOtxt(t);return (d.diN+" "+d.meT);
 }
-function fechaActualTxt(){
-  var mes = fecActSist.getMonth()+1;
-  var dia = fecActSist.getDate(); 
-  var ano = fecActSist.getFullYear();
-  if(dia<10){dia='0'+dia;}
-  if(mes<10){mes='0'+mes}
-  return fechaForma2(ano+"-"+mes+"-"+dia);
+function timeToMesDiaShort(t){// 1655244456367 > 05 May.
+  let d = dateTOtxt(t);return (d.diN+" "+d.meTc);
 }
-let fecActInp = fechaActual()
-function fechaActual(){
-  var mes = fecActSist.getMonth()+1; //mes
-  var dia = fecActSist.getDate(); //dia
-  var ano = fecActSist.getFullYear(); //año
-  if(dia<10){dia='0'+dia}
-  if(mes<10){mes='0'+mes}
-  return (ano+"-"+mes+"-"+dia);
+function fechaActualTxt(){// 20/May./202
+  let d = dateTOtxt();return (d.diN+"/"+d.meTc+"/"+d.ye);
 }
-function dateTOinput(tim){//time 1655244456367
-  let d = new Date(tim)
-  let dia = d.getDate()<10?("0"+d.getDate()):d.getDate()
-  let mes = d.getMonth()<10?("0"+(d.getMonth()+1)):d.getMonth()
-  let year = d.getFullYear()
-  return (year+"-"+mes+"-"+dia)
+function fecActInp(){// 2023-05-24
+  let d = dateTOtxt();return (d.ye+"-"+d.meN+"-"+d.diN);
 }
-const numeroDeSemana = fecha => {
-  const DIA_EN_MILISEGUNDOS = 1000 * 60 * 60 * 24,
-      DIAS_QUE_TIENE_UNA_SEMANA = 7,
-      JUEVES = 4;
-  fecha = new Date(Date.UTC(fecha.getFullYear(), fecha.getMonth(), fecha.getDate()));
-  let diaDeLaSemana = fecha.getUTCDay(); // Domingo es 0, sábado es 6
-  if (diaDeLaSemana === 0) {
-      diaDeLaSemana = 7;
-  }
-  fecha.setUTCDate(fecha.getUTCDate() - diaDeLaSemana + JUEVES);
-  const inicioDelAño = new Date(Date.UTC(fecha.getUTCFullYear(), 0, 1));
-  const diferenciaDeFechasEnMilisegundos = fecha - inicioDelAño;
-  return Math.ceil(((diferenciaDeFechasEnMilisegundos / DIA_EN_MILISEGUNDOS) + 1) / DIAS_QUE_TIENE_UNA_SEMANA);
-};
-function weekActual(t){
-  let hoy = new Date();
-  let w = numeroDeSemana(hoy)
-  return (hoy.getFullYear()+"-W"+(w<10?("0"+w):w))
+function fechTxtFull(tim){//time 1655244456367
+  let d = dateTOtxt(tim);return (d.h+":"+d.m+":"+d.s+" hrs. / "+d.diTc +" / "+d.diN+" "+d.meTc+" "+d.ye)
 }
-function getDateOfISOWeek(wk) {
-  let y = parseInt(wk.split("-")[0])
-  let w = parseInt(wk.split("-")[1].replace(/[^0-9]+/g, ""))
-  var simple = new Date(y, 0, 1 + (w - 1) * 7);
-  var dow = simple.getDay();
-  var ISOweekStart = simple;
-  if (dow <= 4)
-    ISOweekStart.setDate(simple.getDate() - simple.getDay() + 1);
-  else
-    ISOweekStart.setDate(simple.getDate() + 8 - simple.getDay());
-  return ISOweekStart.getTime();
+function fechaForma2(f){//2023-05-20 -> 20/May./2023
+  let fc = f.split("-");return (fc[2]+"/"+nombreMesesCorto[fc[1]-1] +"/"+fc[0])
+}
+function timeTOinput(tim){//1655244456367 > 2023-05-24
+  let d = dateTOtxt(tim);return (d.ye+"-"+d.meN+"-"+d.diN);
+}
+function month(){
+  let d = dateTOtxt();return (d.ye+"-"+d.meN);
+}
+function monthTOtxt(f){
+  let fc = f.split("-");return (nombreMeses[fc[1]-1] +" / "+fc[0])
+}
+function timToMontfYear(tim){
+  let d = dateTOtxt(tim);return (d.ye+"-"+d.meN);
 }
 ///////////////////// FECHAS /////////////////////// 
 /*pantalla spiner succses contador*/
@@ -477,14 +396,14 @@ function loadData(){
   document.getElementById("pantallaSpiner").style.display = "inline-block"
   document.getElementById("spinner").style.display = "block"
 } 
-function successDat(s,b,limp){
+function successDat(r,l){
   document.getElementById("spinner").style.display = "none"
   document.getElementById("cajaSuccess").style.display= 'block';
   document.getElementById("checkSucc").classList.add('success');
   setTimeout(noSucsesDat,1000);
-  if(s){ setTimeout(window.location.reload(),2500) } 
-  if(b){ setTimeout(window.history.back(),3000) } 
-  if(limp!=undefined){ localStorage.setItem(limp,"") } 
+  if(l!=undefined){ localStorage.setItem(limp,"") } 
+  if(r=="r"){ setTimeout(window.location.reload(),2500) } 
+  if(r=="b"){ setTimeout(window.history.back(),3000) }
 }
 function noSucsesDat(){
   document.getElementById("pantallaSpiner").style.display = "none"
@@ -497,14 +416,26 @@ function restarSucessesDat(){
   document.getElementById("checkSucc").classList.remove('success');
 }
 /*pantalla spiner succses contador*/
+let sincConectInd
+function sincConect(){
+  document.getElementById("conection").classList.remove("cloudDowRed")
+  sincConectInd = setInterval(()=>{
+    document.getElementById("conection").classList.toggle("cloudDowGrend")
+  },500)
+}
+function sincConectStop(){
+  clearInterval(sincConectInd);
+  document.getElementById("conection").classList.add("cloudDowGrend")
+}
 ///////////////////////////// secion manejo de tablas //////////////////////////////
-function filter(){
+function filtroBus(){
   const text = document.getElementById("buscar").value.toUpperCase()
   for (let i = 0; i < items.length; i++) {
-    const txtItm = items[i].textContent.toUpperCase()
-    const idItm = items[i].id.split("_")[1]
-    if(txtItm.indexOf(text) > -1){ document.getElementById(idItm).style.display = "" }else{ document.getElementById(idItm).style.display = "none" }
+    const txtItm = items[i].txt.toUpperCase()
+    const idItm = items[i].id
+    if(txtItm.indexOf(text)>-1){document.getElementById(idItm).style.display=""}else{document.getElementById(idItm).style.display = "none" }
   }
+  localStorage.setItem("buscar",document.getElementById("buscar").value)
 }
 let listCol
 function manejoColumnas(tab){
@@ -543,8 +474,45 @@ function establacerColumnas(listCol){
       fila[i].style.display = listCol["cr"+(i+1)]?"":"none"
     }
   }
+  let tfoot = document.getElementById("headColm").querySelectorAll("th")
+  for (let i = 0; i < tfoot.length; i++) {
+    listCol["cr"+(i+1)]
+    tfoot[i].style.display = listCol["cr"+(i+1)]?"":"none"
+  }
 }
 function listVer(){ document.getElementById("contedOcultador").classList.add("listVer") }
 function oculVer(){ document.getElementById("contedOcultador").classList.remove("listVer") }
-
+let asend = true
+function sortTable(ord,typ,elm,arr){
+  return new Promise(function(resolve,reject){
+    if(ord){
+      if(typ=='txt'){
+        if(asend){
+          arr.sort((a, b) => {
+            if(a[elm] < b[elm]) return 1;
+            if(a[elm] > b[elm]) return -1;
+            return 0;
+          })
+          asend = false
+        }else{
+          arr.sort((a, b) => {
+            if(a[elm] < b[elm]) return -1;
+            if(a[elm] > b[elm]) return 1;
+            return 0;
+          })
+          asend = true
+        }  
+      }else{
+        if(asend){
+          arr.sort(((a, b) => b[elm] - a[elm]));
+          asend = false
+        }else{
+          arr.sort(((a, b) => a[elm] - b[elm]));
+          asend = true
+        }
+      }
+      resolve(arr)
+    }else{ resolve(arr) }
+  })
+}
 ///////////////////////////// secion manejo de tablas //////////////////////////////

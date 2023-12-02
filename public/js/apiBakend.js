@@ -1,431 +1,114 @@
-//const url = "https://premaned-server.glitch.me"
-//const serverURL = 'wss://premaned-server.glitch.me';
-const url = location.href.split("/")[0]+"//"+location.href.split("/")[2]
-const serverURL = 'ws://'+location.href.split("/")[2];
-console.log({url,serverURL})
-const token = JSON.parse((localStorage.getItem("datUser")==null||localStorage.getItem("datUser")=="")?"{}":localStorage.getItem("datUser")).tkn
-//////////////////// SECION USER ////////////////////
-function createdUse(dat){
-  return new Promise(function(resolve,reject){
-    fetch(url+`/createdUse`,{method:'post',headers:{'Accept':'application/json,text/plain','Content-Type':'application/json','x-access-token':token},
-      body: JSON.stringify(dat)
-      }).then(rsp=>{ if(rsp.ok){ rsp.text().then(data=>{ resolve(data) }) }  }
-    );
-  })
+const url = location.href.split("/")[0]+"//"+(location.href.split("/")[2]).split(":")[0]
+let serverURL
+if(location.href.split("/")[0]=="http:"){
+  serverURL = 'ws://'+(location.href.split("/")[2]).split(":")[0]
+}else{
+  serverURL = 'wss://'+(location.href.split("/")[2]).split(":")[0]
 }
-function updateUser(dat){
-  return new Promise(function(resolve,reject){
-    fetch(url+`/updateUser`,{method:'post',headers:{'Accept':'application/json,text/plain','Content-Type':'application/json','x-access-token':token},
-      body: JSON.stringify(dat)
-      }).then(rsp=>{ if(rsp.ok){ rsp.text().then(data=>{ resolve(data) }) }  }
-    );
-  })
-}
-function updatePasword(dat){
-  return new Promise(function(resolve,reject){
-    fetch(url+`/updatePasword`,{method:'post',headers:{'Accept':'application/json,text/plain','Content-Type':'application/json','x-access-token':token},
-      body: JSON.stringify(dat)
-      }).then(rsp=>{ if(rsp.ok){ rsp.text().then(data=>{ resolve(data) }) }  }
-    );
-  })
-}
-function loginUser(user,psw){
-  return new Promise(function(resolve,reject){
-    fetch(url+`/loginUser`,{method:'post',headers:{'Accept':'application/json,text/plain','Content-Type':'application/json','x-access-token':psw},
-      body: JSON.stringify({"user":user})
-      }).then(rsp=>{ if(rsp.ok){ rsp.json().then(d=>{ resolve(d) }) } }
-    );
-  })
-}
-function readUsers(){
-  return new Promise(function(resolve,reject){
-    fetch(url+'/readUsers',{method:'post',headers:{'Accept':'application/json,text/plain','Content-Type':'application/json','x-access-token':token},})
-    .then((rsp)=>{ rsp.json().then(function(d) { resolve(d) }); })
-    .catch(function(err){ console.log('Fetch Error :-S', err) });
-  })
-}
-function deleteUser(id){
-  return new Promise(function(resolve,reject){
-    fetch(url+`/deleteUser`,{method:'post',headers:{'Accept':'application/json, text/plain','Content-Type':'application/json','x-access-token':token},
-      body: JSON.stringify({"_id":id})
-      }).then(rsp=>{ if(rsp.ok){ rsp.text().then(d=>{ resolve(d) }); } }
-    );
-  })
-}
-//////////////////// SECION USER ////////////////////
-//////////////////// SECION VENTAS////////////////////
-function createdVenta(dat){
-  return new Promise(function(resolve,reject){
-    fetch(url+`/createdVenta`,{method:'post',headers:{'Accept':'application/json, text/plain','Content-Type':'application/json','x-access-token':token },
-      body: JSON.stringify(dat)
-    }).then(res=>{ if(res.ok){ res.json().then(d=>{ resolve(d) }) } });
-  })
-}
-function readVentasTime(){
-  return new Promise(function(resolve,reject){
-    let timeVEN = storage("timeVEN")==""?0:parseInt(storage("timeVEN"))
-    fetch(url+'/readVentas',{ method:'post',headers:{'Accept':'application/json,text/plain','Content-Type':'application/json','x-access-token':token}, 
-      body: JSON.stringify({"time":timeVEN})
-    }).then((rsp)=>{ rsp.json().then((d)=>{ resolve(d) }); }).catch((err)=>{ console.log(err) });
-  })
-}
-function readIDSventas(){
-  return new Promise(function(resolve,reject){
-    fetch(url+'/readIDSventas',{ method:'post',headers:{'Accept':'application/json,text/plain','Content-Type':'application/json','x-access-token':token}, 
-    }).then((rsp)=>{ rsp.json().then((d)=>{ resolve(d) }); }).catch((err)=>{ console.log(err) });
-  })
-}
-function read_ventas_user(user){
-  return new Promise(function(resolve,reject){
-    let time = storage("timeVEN")==""?0:parseInt(storage("timeVEN"))
-    fetch(url+'/read_ventas_user',{ method: 'post', 
-      headers: {'Accept': 'application/json, text/plain','Content-Type': 'application/json','x-access-token':token}, 
-      body: JSON.stringify({"time":time,"user":user,})
-    }).then(
-      function(rsp) { rsp.json().then(function(data) { resolve(data) }); }
-    ).catch(function(err){ console.log('Fetch Error :-S', err) });
-  })
-}
-function read_ventas_user_time(user,tim1,tim2){
-  return new Promise(function(resolve,reject){
-    fetch(url+'/read_ventas_user_time',{ method: 'post', 
-      headers: {'Accept': 'application/json, text/plain','Content-Type': 'application/json','x-access-token':token}, 
-      body: JSON.stringify({"tim1":tim1,"tim2":tim2,"user":user,})
-    }).then(
-      function(rsp) { rsp.json().then(function(data) { resolve(data) }); }
-    ).catch(function(err){ console.log('Fetch Error :-S', err) });
-  })
-}
+//let urlBoot = "http://localhost"
+//let urlBootWs = 'ws://localhost'
+let urlBoot = "https://botwat-v1.glitch.me"
+let urlBootWs = 'wss://botwat-v1.glitch.me'
 
-function deleteVenta(id){
-  return new Promise(function(resolve,reject){
-    fetch(url+`/deleteVenta`,{method:'post',headers:{'Accept':'application/json, text/plain','Content-Type':'application/json','x-access-token':token},
-      body: JSON.stringify({"_id":id})
-      }).then(rsp => { if(rsp.ok) { rsp.text().then(d=>{ resolve(d) }); } }
-    );
-  })
-}
-function del_ventaMarc(id){
-  return new Promise(function(resolve,reject){
-    fetch(url+`/del_ventaMarc`,{method:'post',headers:{'Accept':'application/json, text/plain','Content-Type':'application/json','x-access-token':token},
-      body: JSON.stringify({"id":id})
-      }).then(rsp => { if(rsp.ok) { rsp.text().then(Data => {resolve(Data) }); } }
-    );
-  })
-}
-//////////////////// SECION VENTAS////////////////////
-//////////////////// SECION INVENTARIO////////////////////
-function createdItem(dat){
-  return new Promise(function(resolve,reject){
-    fetch(url+`/createdItem`,{method:'post',headers:{'Accept':'application/json,text/plain','Content-Type':'application/json','x-access-token':token},
-      body: JSON.stringify(dat)
-      }).then(rsp=>{ if(rsp.ok){ rsp.text().then(data=>{ resolve(data) }) } }
-    ).catch(function(err){ console.log('Fetch Error :-S', err) });
-  })
-}
-function readInventario(){
-  return new Promise(function(resolve,reject){
-    let timeINV = (localStorage.getItem("timeINV")==null||localStorage.getItem("timeINV")=="") ? 0 : parseInt(localStorage.getItem("timeINV")) 
-    fetch(url+'/readInventario', { method: 'post',headers: {'Accept':'application/json,text/plain','Content-Type':'application/json','x-access-token':token}, 
-      body: JSON.stringify({"timeINV":timeINV})
-    }).then(rsp=>{ if(rsp.ok){ rsp.json().then(data=>{ resolve(data) }) } }
-    ).catch(function(err){ console.log('Fetch Error :-S', err) });
-  })
-}
-function readInventarioIDS(){
-  return new Promise(function(resolve,reject){
-    fetch(url+'/read_inventarioIDS').then(
-      function(rsp) { rsp.json().then(function(data) { resolve(data) }); }
-    ).catch(function(err){ console.log('Fetch Error :-S', err) });
-  })
-}
-function deleteItem(id){
-  return new Promise(function(resolve,reject){
-    fetch(url+`/deleteItem`,{method:'post',headers:{'Accept':'application/json,text/plain','Content-Type':'application/json','x-access-token':token},
-      body: JSON.stringify({"_id":id})
-      }).then(rsp => { if(rsp.ok) { rsp.text().then(d => {resolve(d) }); } }
-    );
-  })
-}
-function updateItem(dat){
-  return new Promise(function(resolve,reject){
-    fetch(url+`/updateItem`,{method:'post',headers:{'Accept':'application/json,text/plain','Content-Type':'application/json','x-access-token':token},
-      body: JSON.stringify(dat)
-    }).then(rsp => {  if(rsp.ok){ rsp.text().then(d => { resolve(d) }) } });
-  })
-}
-function itemCantMas(dat){
-  return new Promise(function(resolve,reject){
-    fetch(url+`/itemCantMas`,{method:'post',headers:{'Accept':'application/json,text/plain','Content-Type':'application/json','x-access-token':token},
-      body: JSON.stringify(dat)
-    }).then(rsp=>{ if(rsp.ok) { rsp.text().then(d =>{ resolve(d) }); } });
-  })
-}
-function itemCantMenos(dat){
-  return new Promise(function(resolve,reject){
-    fetch(url+`/itemCantMas`,{method:'post',headers:{'Accept':'application/json,text/plain','Content-Type':'application/json','x-access-token':token},
-      body: JSON.stringify(dat)
-    }).then(rsp=>{ if(rsp.ok) { rsp.text().then(d =>{ resolve(d) }); } });
-  })
-}
-//////////////////// SECION INVENTARIO////////////////////
+let urlInv = 'https://angela-y-carlos.glitch.me'
 
-function sizeDB(){
+const token = JSON.parse((localStorage.getItem("datUser")==null||localStorage.getItem("datUser")=="")?"{}":localStorage.getItem("datUser")).token
+function apiPostJsonCrud(metodo,dat,coleccion){//requests json token - respons json
   return new Promise(function(resolve,reject){
-    fetch(url+`/sizeDB`,{method:'get',headers:{'Accept':'application/json,text/plain','Content-Type':'application/json','x-access-token':token}}).
-      then(rsp=>{ if(rsp.ok) { rsp.json().then(d=>{resolve(d) }) } }
-    );
+    dat["coleccion"] = coleccion
+    fetch(url+`/`+metodo,{method:'post',headers:{'Accept':'application/json,text/plain','Content-Type':'application/json','x-access-token':token},body:JSON.stringify(dat)}).then(rsp=>{ if(rsp.ok){ rsp.json().then(d=>{ resolve(d) })}});
   })
 }
-function readNumNota(){
+function apiPostJsonRut(metodo,dat){//requests json token - respons json
   return new Promise(function(resolve,reject){
-    fetch(url+`/readNumNota`,{method:'post',headers:{'Accept':'application/json,text/plain','Content-Type':'application/json','x-access-token':token},
-    }).then(rsp => { if(rsp.ok) { rsp.text().then(Data => { resolve(Data) });  }  });
+    fetch(url+`/`+metodo,{method:'post',headers:{'Accept':'application/json,text/plain','Content-Type':'application/json','x-access-token':token},body:JSON.stringify(dat)}).then(rsp=>{ if(rsp.ok){ rsp.json().then(d=>{ resolve(d) })}});
   })
 }
-function writeNumNota(dat){
+function apiPost(url,dat){//requests json token - respons json
   return new Promise(function(resolve,reject){
-    fetch(url+`/writeNumNota`,{method:'post',headers:{'Accept':'application/json,text/plain','Content-Type':'application/json','x-access-token':token},
-      body: JSON.stringify(dat)
-    }).then(rsp => { if(rsp.ok) { rsp.text().then(Data => { resolve(Data) });  }  });
+    fetch(url,{method:'post',headers:{'Accept':'application/json,text/plain','Content-Type':'application/json','x-access-token':token},body:JSON.stringify(dat)}).then(rsp=>{ if(rsp.ok){ rsp.json().then(d=>{ resolve(d) })}});
   })
 }
-function timeLocal(id){ return localStorage.getItem(id)==null?0:parseInt(localStorage.getItem(id)) }
+/////////// SINCRO DATA BASE //////////
+function timCol(tim){ return (localStorage.getItem(tim)==null||localStorage.getItem(tim)=="")?0:parseInt(localStorage.getItem(tim)) }
 function elemtDif(d1,d2){
   var ar = [];
   for (var i = 0; i < d1.length; i++) {
     var ig = false;
-    for (var j = 0; j < d2.length & !ig; j++){ if(d1[i] == d2[j]){ ig=true } }
-    if(!ig){ ar.push(d1[i]) }
+    for (var j = 0; j < d2.length & !ig; j++){ if(d1[i].id == d2[j]){ ig=true } }
+    if(!ig){ ar.push(d1[i].id) }
   }
   return ar
 }
-
+async function sincroBD(col,tp){
+  console.log("bajando "+col);iniSinAmi(tp)
+  let datCloud = await apiPostJsonCrud("readTime",{"time":timCol(col+"Time")},col)
+  let datos = datCloud["record"]
+  for (let i = 0; i < datos.length; i++) {
+    let item = datos[i];
+    await write_DB(item,col)
+    if(item["time"]>timCol(col+"Time")){ localStorage.setItem(col+"Time",item["time"]) }
+  }
+  var datLocal = await read_DB(col)
+  if(datCloud["count"]<datLocal.length){ 
+    let arrCloud = await apiPostJsonCrud("readIds",{},col)
+    let sincroDel = elemtDif(datLocal,arrCloud)
+    for (let i = 0; i < sincroDel.length; i++) {
+      let id = sincroDel[i];
+      await del_DB(id,col)
+      console.log("eleiminando..!!")
+    }
+    console.log(col+" bajado...!!!");finSinAmi(tp)
+  }else{
+    console.log(col+" bajado...!!!");finSinAmi(tp)
+  }
+}
+function iniSinAmi(t){
+  if(t=="m"){loadData()}
+  if(t=="a"){sincConect()}
+  if(t=="r"){sincConect()}
+}
+function finSinAmi(t){
+  if(t=="m"){successDat("r")}
+  if(t=="a"){sincConectStop();renderTab()}
+  if(t=="r"){sincConectStop();renderTab()}
+}
 /////////// SINCRO DATA BASE //////////
-//clientes
-async function sincroDBclientes(){
-  loadData()
-  console.log("bajando clientes....")
-  let datCloud = await readClienteTime()
-  console.log(datCloud)
-  let datos = datCloud["record"]
-  for (let i = 0; i < datos.length; i++) {
-    let item = datos[i];
-    item["upCloud"] = true
-    let v_reg = await write_DB(item,'clientes')
-    let timeLocal = storage("timeCLI")==""?0:parseInt(storage("timeCLI"))
-    if(item["time"]>timeLocal){ localStorage.setItem("timeCLI",item["time"]) }
-  }
-  let datLocal = await read_DB('clientes')
-  if(datCloud["count"]<datLocal.length){ 
-    sincroDelsCLI() 
-  }else{
-    console.log("clientes bajado...!!!")
-    successDat(true)
-  }
-}
-async function sincroDelsCLI(){
-  let datLocal = await read_DB('clientes')
-  let arrCloud = await readClientesIDS()
-  let sincroDel = elemtDif(datLocal,arrCloud)
-  for (let i = 0; i < sincroDel.length; i++) {
-    let dat = sincroDel[i];
-    let delLoc = await del_DB(dat.id,'clientes')
-    console.log("eleiminando..!!")
-  }
-  console.log("clientes bajado...!!!")
-  successDat(true)
-}
-//clientes
-//inventario
-async function sincroDBinventario(){
-  loadData()
-  console.log("bajando Inventario.....")  
-  let datCloud = await readInventario()
-  let datos = datCloud["record"]
-  for (let i = 0; i < datos.length; i++) {
-    let item = datos[i];
-    await write_DB(item,'inventario')
-    let timeLocal = (localStorage.getItem("timeINV")==null||localStorage.getItem("timeINV")=="") ? 0 : parseInt(localStorage.getItem("timeINV")) 
-    if(item["time"]>timeLocal){ localStorage.setItem("timeINV",item["time"]) }
-  }
-  let datLocal = await read_DB('inventario')
-  if(datCloud["count"]<datLocal.length){ 
-    sincroDelsINV() 
-  }else{
-    console.log("Inventario bajado...!!!")
-    successDat(true)
-  }
-}
-async function sincroDelsINV(){
-  let datLocal = await read_DB('inventario')
-  let arrCloud = await readInventarioIDS()
-  let sincroDel = elemtDif(datLocal,arrCloud)
-  for (let i = 0; i < sincroDel.length; i++) {
-    let dat = sincroDel[i];
-    let delLoc = await del_DB(dat.id,'inventario')
-    console.log("eleiminando..!!")
-  }
-  console.log("Inventario bajado...!!!")
-  successDat(true)
-}
-//inventario
-//Usuarios
-async function sincroDBusuario(){
-  loadData()
-  console.log("bajando usuarios.....")  
-  let datCloud = await readUsers()
-  let datos = datCloud["record"]
-  for (let i = 0; i < datos.length; i++) {
-    let item = datos[i];
-    await write_DB(item,'usuario')
-  }
-  let datLocal = await read_DB('usuario')
-  if(datCloud["count"]<datLocal.length){ 
-    //sincroDelsINV() 
-  }else{
-    console.log("usuario bajado...!!!")
-    successDat(true)
-  }
-}
-async function sincroDelsUSE(){
-  let datLocal = await read_DB('usuario')
-  let arrCloud = await readInventarioIDS()
-  let sincroDel = elemtDif(datLocal,arrCloud)
-  for (let i = 0; i < sincroDel.length; i++) {
-    let dat = sincroDel[i];
-    let delLoc = await del_DB(dat.id,'usuario')
-    console.log("eleiminando..!!")
-  }
-  console.log("usuario bajado...!!!")
-  successDat(true)
-}
-//Usuarios
-//ventas 
-async function sincroDBventas(){
-  loadData()
-  console.log("bajando ventas Admin....")
-  let datCloud = await readVentasTime()
-  let datos = datCloud["record"]
-  for (let i = 0; i < datos.length; i++) {
-    let item = datos[i];
-    let v_reg = await write_DB(item,'ventas')
-    let arch = await write_DB(item,'archivo')//archivo
-    let timeLocal = storage("timeVEN")==""?0:parseInt(storage("timeVEN"))
-    if(item["time"]>timeLocal){ localStorage.setItem("timeVEN",item["time"]) }
-  }
-  let datLocal = await read_DB('ventas')
-  if(datCloud["count"]<datLocal.length){ 
-    //sincroDelsVenta() 
-  }else{
-    console.log("ventas bajado...!!!")
-    successDat(true)
-  }
-}
-async function sincroDelsINV(){
-  let datLocal = await read_DB('ventas')
-  let arrCloud = await readInventarioIDS()
-  let sincroDel = elemtDif(datLocal,arrCloud)
-  for (let i = 0; i < sincroDel.length; i++) {
-    let dat = sincroDel[i];
-    let delLoc = await del_DB(dat.id,'ventas')
-    console.log("eleiminando..!!")
-  }
-  console.log("ventas bajado...!!!")
-  successDat(true)
-}
-//ventas y inventario
-/////////// SINCRO DATA BASE //////////
-
-///////// Actualizar Tiempo Real /////////
-async function changeVenta(init){
-  console.log("bajando ventas nuevas o modificadas ...")
-  document.getElementById("conection").classList.add("animacionPulso")
-  let datCloudVent = await readVentasTime()
-  let datVent = datCloudVent["record"]
-  for (let i = 0; i < datVent.length; i++) {
-    let item = datVent[i];
-    await write_DB(item,'ventas')
-    await write_DB(item,'archivo')//archivo
-    if(item["time"]>storageDef("timeVEN",0)){ localStorage.setItem("timeVEN",item["time"]) }
-  }
-  console.log("ventas Nuevo Registrado ...")
-  let datLocalVent = await read_DB('ventas')
-  if(datCloudVent["count"]<datLocalVent.length){ 
-    deleteChangeVenta(init) 
-  }else{
-    console.log("ventas bajado...!!!")
-    changeInventario(init)
-  }
-}
-async function deleteChangeVenta(init){
-  let datLocal = await read_DB('ventas')
-  let arrCloud = await readInventarioIDS()
-  let sincroDel = elemtDif(datLocal,arrCloud)
-  for (let i = 0; i < sincroDel.length; i++) {
-    let dat = sincroDel[i];
-    await del_DB(dat.id,'ventas')
-    console.log("eleiminando venta..!!")
-  }
-  console.log("ventas eliminadas...!!!")
-  changeInventario(init)
-}
-async function changeInventario(init){
-  console.log("bajando cambios Inventario.....") 
-  let datCloud = await readInventario()
-  let datos = datCloud["record"]
-  for (let i = 0; i < datos.length; i++) {
-    let item = datos[i];
-    await write_DB(item,'inventario')
-    let timeLocal = (localStorage.getItem("timeINV")==null||localStorage.getItem("timeINV")=="") ? 0 : parseInt(localStorage.getItem("timeINV")) 
-    if(item["time"]>timeLocal){ localStorage.setItem("timeINV",item["time"]) }
-  }
-  let datLocal = await read_DB('inventario')
-  if(datCloud["count"]<datLocal.length){ 
-    deleteChangeInventario(init) 
-  }else{
-    console.log("Inventario bajado...!!!")
-    document.getElementById("conection").classList.remove("animacionPulso")
-    if(init){ renderDatos() }
-  }
-}
-async function deleteChangeInventario(init){
-  let datLocal = await read_DB('inventario')
-  let arrCloud = await readInventarioIDS()
-  let sincroDel = elemtDif(datLocal,arrCloud)
-  for (let i = 0; i < sincroDel.length; i++) {
-    let dat = sincroDel[i];
-    await del_DB(dat.id,'inventario')
-    console.log("eleiminando item inventario..!!")
-  }
-  console.log("Inventario bajado...!!!")
-  document.getElementById("conection").classList.remove("animacionPulso")
-  if(init){ renderDatos() }
-}
-///////// Actualizar Tiempo Real /////////
-
 /////////// WEBSOCKET CONECCION //////////
+let sinAct 
 let socket;
-function openSocket(){
+function openSocket(act){
+  sinAct = act
   socket = new WebSocket(serverURL);
   socket.addEventListener('open', openConnection);
   socket.addEventListener('close', closeConnection);
-  socket.addEventListener('message', readIncomingMessage);
+  socket.addEventListener('message', readMessage);
 }
-
+function closeConnection(){ setTimeout(openSocket(sinAct),500) }
 function openConnection(){
-  document.getElementById("conection").style.backgroundColor = "rgb(30, 255, 0)"
-  if (socket.readyState===WebSocket.OPEN){ changeVenta(true) }
+  if(socket.readyState===WebSocket.OPEN){
+    console.log("open ws")
+    //if(sinAct=="sincINV"){ sincroBD('invitados','a') }
+    if(sinAct=="readMsgInv"){ 
+      sendMessage(JSON.stringify({"rut":"readMsgInv"})) 
+      loadData()
+    }
+  }
 }
-function closeConnection(){
-  document.getElementById("conection").style.backgroundColor = "rgb(255, 0, 0)"
-}
-
-function readIncomingMessage(event) {
-  console.log(event.data)
-  changeVenta(true)
+function readMessage(e){ 
+  let dat = JSON.parse(e.data); //console.log(e.data); 
+  if(dat.rut=="readMsgInv"){
+    document.getElementById("inputMsg").value = dat.dat
+    localStorage.setItem("inputMsg",dat.dat)
+    document.getElementById("inputMsgMesa").value = dat.mesa
+    localStorage.setItem("msgInvMesa",dat.mesa)
+    successDat()
+  }
+  //if(sinAct=="sincINV"){ sincroBD('invitados','r') }
 }
 function sendMessage(dat){
- // if (socket.readyState===WebSocket.OPEN){ socket.send(dat); }
+  return new Promise(function(resolve,reject){
+    if(socket.readyState===WebSocket.OPEN){ socket.send(dat); resolve(true) } 
+  })
 }
 /////////// WEBSOCKET CONECCION //////////

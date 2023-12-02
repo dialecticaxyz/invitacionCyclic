@@ -4,16 +4,16 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <title>REGISTRAR</title>
-<link rel="stylesheet" href="css/estilos.css">
+<link rel="stylesheet" href="./css/style.css">
 </head>
 <style>
 .btn-material{width: 180px;padding: 7px;}
-.tituloForm{  margin-bottom: -20px; }
+.conteMenu{height: 50px;}
 </style>
 <body onload="startDB()">
 <div class="conteMenu">
   <span></span>
-  <div class="titMenu">REGISTRAR ADMINISTRADOR TEMPORAL</div>
+  <div class="titMenu">ADMIN TEMPORAL</div>
   <span></span>
 </div>
 
@@ -24,20 +24,17 @@
   </div>
   <div class="contInput">
     <input  id="user" required class="input_ef" type="number" placeholder=""/>
-    <label class="label_ef">Usuario (celular)</label>
-  </div>
-  <div class="contInput">
-    <input  id="password" required class="input_ef" type="password" placeholder=""/>
-    <label class="label_ef">Contraseña</label>
+    <label class="label_ef">Usuario y Contraseña (celular)</label>
   </div>
   <div class="botones">
     <button class="btn-material info" id="btnGuar" onclick="registrar()">REGISTRAR</button>
   </div>
 </div>
 
-<script src="../js/mainDB.js"></script>
+<script src="./js/apiBakend.js"></script>
+<script src="./js/mainDB.js"></script>
 <script>
-let url = location.href.split("/")[0]+"//"+location.href.split("/")[2]
+
 function createdAdminInit(dat){
   return new Promise(function(resolve,reject){
     fetch(url+`/createdAdminInit`,{method:'post',headers:{'Accept':'application/json,text/plain','Content-Type':'application/json','x-access-token':""},
@@ -52,14 +49,12 @@ async function registrar(){
   let val = {}
   val["nom"] = document.getElementById("nom").value
   val["user"] = document.getElementById("user").value
-  val["password"] = document.getElementById("password").value
   let reg = await createdAdminInit(val)
-  if(reg.std=="success"){
-    localStorage.setItem("datUser",JSON.stringify(reg) );
-    successDat(true)
+  if(reg.msg=="success"){
+    successDat()
   }else{
     alert("existe Usuarios");
-    successDat(true)
+    successDat()
   }  
 }
 
